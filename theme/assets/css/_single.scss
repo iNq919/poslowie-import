@@ -1,0 +1,116 @@
+#main-content {
+  &.single {
+    .back-nav {
+      margin-bottom: 2rem;
+
+      .back-link {
+        display: inline-block;
+        text-decoration: none;
+        color: $color-black;
+        font-weight: 500;
+        transition: color 0.3s;
+
+        &:hover {
+          color: $color-primary;
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .profile {
+      display: flex;
+      flex-direction: column;
+      background: $color-white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+
+      .profile-header {
+        padding: 2rem;
+        background: $color-primary;
+        text-align: center;
+
+        .profile-name {
+          font-size: $font-size-36px;
+          font-weight: 700;
+          color: $color-white;
+        }
+
+        .profile-club {
+          margin: 0.5rem 0 0;
+          font-size: $font-size-18px;
+          color: $color-white;
+        }
+      }
+
+      .profile-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 3rem;
+        padding: 2rem;
+
+        .profile-image {
+          flex: 1 1 45%;
+          max-width: 350px;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+          }
+        }
+
+        .profile-info {
+          flex: 1 1 55%;
+
+          .details-list {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            row-gap: 0.75rem;
+            column-gap: 1rem;
+
+            dt {
+              font-weight: 600;
+
+            }
+
+            dd {
+              text-transform: capitalize;
+            }
+
+            .email-link {
+              color: $color-primary;
+              text-decoration: none;
+              word-break: break-word;
+              text-transform: none;
+
+              &:hover {
+                text-decoration: underline;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .single-empty {
+      text-align: center;
+      padding: 5rem 1rem;
+      font-size: 1.5rem;
+      color: #999;
+    }
+  }
+}
+
+@media (max-width: $media-hd) {
+}
+@media (max-width: $media-laptop) {
+}
+@media (max-width: $media-tablet) {
+}
+@media (max-width: $media-mobile) {
+}
+@media (max-width: $media-mobile-sm) {
+}

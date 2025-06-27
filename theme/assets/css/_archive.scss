@@ -1,0 +1,128 @@
+#main-content {
+  &.archive {
+    .archive-title {
+      font-size: $font-size-48px;
+      font-weight: 700;
+      color: $color-primary;
+      padding-bottom: 3rem;
+      text-align: center;
+    }
+
+    .archive-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 25px;
+    }
+
+    .card {
+      background: $color-white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+      &:hover,
+      &:focus-within {
+        box-shadow: 0 8px 25px rgb(0 0 0 / 0.15);
+        transform: translateY(-4px);
+      }
+
+      .card-link {
+        color: inherit;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+
+        .card-image {
+          width: 100%;
+          padding-top: 120%;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+
+        .card-body {
+          display: flex;
+          flex-direction: column;
+          padding: 15px 20px;
+          height: 100%;
+
+          .card-name {
+            font-weight: 700;
+            font-size: $font-size-20px;
+            color: $color-primary;
+            line-height: 2rem;
+            padding-bottom: 1rem;
+            margin-bottom: auto;
+          }
+
+          .card-club,
+          .card-district {
+            font-size: $font-size-16px;
+            color: $color-black;
+          }
+        }
+      }
+    }
+
+    .pagination {
+      margin: 40px 0;
+      text-align: center;
+
+      ul {
+        list-style: none;
+        padding: 0;
+        display: inline-flex;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      li {
+        display: inline;
+        padding-inline-start: 0px;
+      }
+
+      a,
+      .current {
+        display: inline-block;
+        padding: 8px 16px;
+        border: 1px solid $color-primary;
+        border-radius: 5px;
+        color: $color-black;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+
+        &:hover {
+          background-color: $color-secondary;
+          border-color: $color-secondary;
+          color: $color-white;
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      .profile-content {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .profile-info {
+        width: 100%;
+      }
+    }
+  }
+}
+
+@media (max-width: $media-hd) {
+}
+@media (max-width: $media-laptop) {
+}
+@media (max-width: $media-tablet) {
+}
+@media (max-width: $media-mobile) {
+}
+@media (max-width: $media-mobile-sm) {
+}
