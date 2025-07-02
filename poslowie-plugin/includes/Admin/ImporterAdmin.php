@@ -23,8 +23,8 @@ class ImporterAdmin
 
         add_action('init', [$this, 'register_acf_fields']);
         add_action('admin_menu', [$this, 'add_admin_menu']);
-        add_action('wp_ajax_dd_sync_poslowie', [$this, 'handle_manual_sync']);
-        add_action('wp_ajax_dd_stop_sync_poslowie', [$this, 'handle_stop_sync']);
+        add_action('wp_ajax_sync_poslowie', [$this, 'handle_manual_sync']);
+        add_action('wp_ajax_stop_sync_poslowie', [$this, 'handle_stop_sync']);
         add_action('admin_init', fn() => delete_option('poslowie_import_stop'));
     }
 
@@ -129,7 +129,7 @@ class ImporterAdmin
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: new URLSearchParams({
-                        action: 'dd_sync_poslowie',
+                        action: 'sync_poslowie',
                         nonce: '<?php echo wp_create_nonce("sync_poslowie_nonce"); ?>',
                         batch_size: batchSize
                     }),
@@ -153,7 +153,7 @@ class ImporterAdmin
                 fetch(ajaxurl, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: new URLSearchParams({action: 'dd_stop_sync_poslowie'})
+                    body: new URLSearchParams({action: 'stop_sync_poslowie'})
                 });
             };
         })();
