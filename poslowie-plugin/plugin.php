@@ -1,24 +1,21 @@
 <?php
-/**
- * Plugin Name: Posłowie Importer
- * Description: Importuje i zarządza posłami Sejmu RP na podstawie danych z API Sejmu.
- * Version: 1.0
- * Author: Przemysław Zienkiewicz
- */
+/*
+* Plugin Name: Posłowie Importer
+* Description: Importuje i zarządza posłami Sejmu RP na podstawie danych z API Sejmu.
+* Version: 1.0
+* Author: Przemysław Zienkiewicz
+*/
 
-if (!defined('ABSPATH')) exit;
+use App\Importer;
+use App\ImporterAdmin;
 
-require_once plugin_dir_path(__FILE__) . 'inc/class-importer.php';
+if (!defined('ABSPATH')) {
+    exit;
+}
 
-add_filter('acf/settings/save_json', function () {
-    return plugin_dir_path(__FILE__) . 'acf-json';
-});
+require_once __DIR__ . '/vendor/autoload.php';
 
-add_filter('acf/settings/load_json', function ($paths) {
-    $paths[] = plugin_dir_path(__FILE__) . 'acf-json';
-    return $paths;
-});
-
-add_action('init', function() {
-    new Poslowie_Import();
+add_action('plugins_loaded', function () {
+    new Importer();
+    new ImporterAdmin();
 });

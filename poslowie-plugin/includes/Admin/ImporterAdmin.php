@@ -1,33 +1,26 @@
 <?php
 
-class Poslowie_Import {
-    const CPT = 'posel';
-    const API_URL = 'https://api.sejm.gov.pl/sejm/term10/MP';
+namespace App\ImporterAdmin;
 
-    private array $fields = [
-        'first_name' => 'firstName',
-        'last_name' => 'lastName',
-        'email' => 'email',
-        'club' => 'club',
-        'voivodeship' => 'voivodeship',
-        'birth_date' => 'birthDate',
-        'birth_location' => 'birthLocation',
-        'district_name' => 'districtName',
-        'district_number' => 'districtNum',
-        'education_level' => 'educationLevel',
-        'votes' => 'numberOfVotes',
-        'profession' => 'profession',
-        'photo_url' => null
-    ];
+use App\Importer\Importer;
 
-    public function __construct() {
-        if (!is_admin()) return;
+class ImporterAdmin
+{
+    private Importer $importer;
+
+    public function __construct()
+    {
+        if (!is_admin()) {
+            return;
+        }
+
+        $this->importer = new Importer();
+
         if (!function_exists('acf_add_local_field_group')) {
             add_action('admin_notices', [$this, 'acf_missing_notice']);
             return;
         }
 
-        add_action('plugins_loaded', [$this, 'register_cpt']);
         add_action('init', [$this, 'register_acf_fields']);
         add_action('admin_menu', [$this, 'add_admin_menu']);
         add_action('wp_ajax_dd_sync_poslowie', [$this, 'handle_manual_sync']);
@@ -35,26 +28,17 @@ class Poslowie_Import {
         add_action('admin_init', fn() => delete_option('poslowie_import_stop'));
     }
 
-    public function acf_missing_notice(): void {
+    public function acf_missing_notice(): void
+    {
         echo '<div class="notice notice-error"><p><strong>Posłowie Import:</strong> Brakuje wtyczki ACF.</p></div>';
     }
 
-    public function register_cpt(): void {
-        register_post_type(self::CPT, [
-            'labels' => ['name' => 'Posłowie', 'singular_name' => 'Poseł'],
-            'public' => true,
-            'has_archive' => true,
-            'rewrite' => ['slug' => 'posel'],
-            'supports' => ['title'],
-            'show_in_rest' => true,
-        ]);
-    }
+    public function register_acf_fields(): void
+    {
+        $fields = [];
 
-    public function register_acf_fields(): void {
-        $acf_fields = [];
-
-        foreach (array_keys($this->fields) as $field_name) {
-            $acf_fields[] = [
+        foreach (array_keys(Importer::FIELD_MAP) as $field_name) {
+            $fields[] = [
                 'key'   => 'field_' . $field_name,
                 'label' => ucwords(str_replace('_', ' ', $field_name)),
                 'name'  => $field_name,
@@ -62,25 +46,35 @@ class Poslowie_Import {
                     'email' => 'email',
                     'birth_date' => 'date_picker',
                     'photo_url' => 'url',
-                    default => 'text'
-                }
+                    default => 'text',
+                },
             ];
         }
 
         acf_add_local_field_group([
             'key' => 'group_mp_details',
             'title' => 'MP Details',
-            'fields' => $acf_fields,
-            'location' => [[['param' => 'post_type', 'operator' => '==', 'value' => self::CPT]]],
+            'fields' => $fields,
+            'location' => [[['param' => 'post_type', 'operator' => '==', 'value' => Importer::CPT]]],
         ]);
     }
 
-    public function add_admin_menu(): void {
-        add_menu_page('Posłowie Import', 'Posłowie Import', 'manage_options', 'mps-importer', [$this, 'admin_page'], 'dashicons-groups', 30);
+    public function add_admin_menu(): void
+    {
+        add_menu_page(
+            'Posłowie Import',
+            'Posłowie Import',
+            'manage_options',
+            'mps-importer',
+            [$this, 'admin_page'],
+            'dashicons-groups',
+            30
+        );
     }
 
-    public function admin_page(): void {
-        $count = wp_count_posts(self::CPT)->publish;
+    public function admin_page(): void
+    {
+        $count = wp_count_posts(Importer::CPT)->publish;
         ?>
         <div class="wrap">
             <h1>Posłowie Import</h1>
@@ -98,10 +92,11 @@ class Poslowie_Import {
                 <thead><tr><th>ID</th><th>Zdjęcie</th><th>Imię</th><th>Nazwisko</th><th>Partia</th><th>Region</th></tr></thead>
                 <tbody>
                 <?php
-                $query = new WP_Query(['post_type' => self::CPT, 'posts_per_page' => -1]);
+                $query = new \WP_Query(['post_type' => Importer::CPT, 'posts_per_page' => -1]);
                 while ($query->have_posts()) {
                     $query->the_post();
-                    printf('<tr><td>%d</td><td><img src="%s" width="60"></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+                    printf(
+                        '<tr><td>%d</td><td><img src="%s" width="60"></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
                         get_the_ID(),
                         esc_url(get_field('photo_url')),
                         esc_html(get_field('first_name')),
@@ -166,7 +161,8 @@ class Poslowie_Import {
         <?php
     }
 
-    public function handle_manual_sync(): void {
+    public function handle_manual_sync(): void
+    {
         check_ajax_referer('sync_poslowie_nonce', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized');
@@ -174,80 +170,12 @@ class Poslowie_Import {
 
         update_option('poslowie_import_stop', false);
         $batch_size = isset($_POST['batch_size']) ? intval($_POST['batch_size']) : -1;
-        wp_send_json_success($this->sync_poslowie($batch_size));
+        wp_send_json_success($this->importer->sync_poslowie($batch_size));
     }
 
-    public function handle_stop_sync(): void {
+    public function handle_stop_sync(): void
+    {
         update_option('poslowie_import_stop', true);
         wp_send_json_success('Przerwano synchronizację');
-    }
-
-    private function post_meta_equal(int $post_id, array $data): bool {
-        foreach ($data as $key => $value) {
-            if (get_post_meta($post_id, $key, true) !== (string)$value) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private function prepare_post_data(array $mp_data): array {
-        $meta = [];
-
-        foreach ($this->fields as $meta_key => $api_key) {
-            $meta[$meta_key] = $api_key ? ($mp_data[$api_key] ?? '') : self::API_URL . "/{$mp_data['id']}/photo";
-        }
-
-        $title = trim(($mp_data['firstName'] ?? '') . ' ' . ($mp_data['lastName'] ?? ''));
-        return ['title' => $title, 'meta' => $meta];
-    }
-
-    public function sync_poslowie(int $batch_size = -1): string {
-        if (!post_type_exists(self::CPT)) return 'CPT nie istnieje.';
-
-        $response = wp_remote_get(self::API_URL);
-        if (is_wp_error($response)) return 'Błąd: ' . $response->get_error_message();
-
-        $list = json_decode(wp_remote_retrieve_body($response), true);
-        if (!is_array($list)) return 'Błędny JSON.';
-
-        $count = 0;
-
-        foreach ($list as $item) {
-            if (get_option('poslowie_import_stop')) return 'Synchronizacja została zatrzymana.';
-            if ($batch_size !== -1 && $count >= $batch_size) break;
-
-            $details = wp_remote_get(self::API_URL . "/{$item['id']}");
-            if (is_wp_error($details)) continue;
-
-            $mp_data = json_decode(wp_remote_retrieve_body($details), true);
-            if (!is_array($mp_data)) continue;
-
-            $prepared = $this->prepare_post_data($mp_data);
-            $existing = get_page_by_title($prepared['title'], OBJECT, self::CPT);
-
-            if ($existing) {
-                if ($this->post_meta_equal($existing->ID, $prepared['meta'])) continue;
-
-                wp_update_post(['ID' => $existing->ID, 'post_title' => $prepared['title']]);
-                foreach ($prepared['meta'] as $key => $value) {
-                    update_post_meta($existing->ID, $key, $value);
-                }
-                
-            } else {
-                $post_id = wp_insert_post([
-                    'post_title' => $prepared['title'],
-                    'post_type' => self::CPT,
-                    'post_status' => 'publish',
-                ]);
-                foreach ($prepared['meta'] as $key => $value) {
-                    update_post_meta($post_id, $key, $value);
-                }
-            }
-
-            $count++;
-        }
-
-        return "Zakończono. Zaimportowano $count posłów.";
     }
 }
